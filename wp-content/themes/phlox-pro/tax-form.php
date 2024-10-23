@@ -109,13 +109,13 @@ function calculate($req)
     'warning_late_payment' => thousand_seperate($warningLatePayment),
     'warning_late_payment_fine' => $warningLatePaymentFine,
     'refundable_tax' => thousand_seperate($refundableTax),
-    'total_income' => thousand_seperate($totalIncome) . 'Đ',
-    'personal_deduction' => thousand_seperate($personalDeduction) . 'Đ',
-    'dependents_deduction' => thousand_seperate($dependentsDeduction) . 'Đ',
-    'total_deduction' => thousand_seperate($totalDeduction) . 'Đ',
-    'total_taxable_income' => thousand_seperate($totalTaxableIncome) . 'Đ',
-    'total_tax' => thousand_seperate($totalTax) . 'Đ',
-    'total_tax_paid' => thousand_seperate($totalTaxPaid) . 'Đ'
+    'total_income' => thousand_seperate($totalIncome),
+    'personal_deduction' => thousand_seperate($personalDeduction),
+    'dependents_deduction' => thousand_seperate($dependentsDeduction),
+    'total_deduction' => thousand_seperate($totalDeduction),
+    'total_taxable_income' => thousand_seperate($totalTaxableIncome),
+    'total_tax' => thousand_seperate($totalTax),
+    'total_tax_paid' => thousand_seperate($totalTaxPaid)
   ];
 }
 
