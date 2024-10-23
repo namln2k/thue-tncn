@@ -108,7 +108,7 @@ function calculate($req)
     'tax_need_to_pay' => thousand_seperate($taxNeedToPay),
     'warning_late_payment' => thousand_seperate($warningLatePayment),
     'warning_late_payment_fine' => $warningLatePaymentFine,
-    'refundable_tax' => $refundableTax,
+    'refundable_tax' => thousand_seperate($refundableTax),
     'total_income' => thousand_seperate($totalIncome) . 'Đ',
     'personal_deduction' => thousand_seperate($personalDeduction) . 'Đ',
     'dependents_deduction' => thousand_seperate($dependentsDeduction) . 'Đ',
