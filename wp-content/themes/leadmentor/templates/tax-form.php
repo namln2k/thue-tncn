@@ -168,7 +168,7 @@
     text-align: center;
   }
 
-  .result .contact-form input,
+  .result .contact-form .input,
   .result .contact-form textarea {
     font-size: 16px;
     border-radius: 8px;
@@ -382,11 +382,11 @@
         <fieldset class="row fieldset">
           <field class="field required">
             <label for="customer-name" class="label">Họ tên</label>
-            <input type="text" id="customer-name" name="customer-name" class="input text" required>
+            <input type="text" id="customer-name" name="customer-name" class="input" required>
           </field>
           <field class="field required">
             <label for="mobile-number" class="label">Số điện thoại</label>
-            <input size="40" maxlength="400" type="tel" name="mobile-number" required>
+            <input size="40" maxlength="400" type="tel" name="mobile-number" class="input" required>
           </field>
         </fieldset>
         <fieldset class="row fieldset">
