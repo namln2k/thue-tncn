@@ -237,8 +237,20 @@ function contact_calculate_tax($req)
   $warningLatePayment = $calculatedResult['warning_late_payment'];
   $body .= "<li><p>\"Cảnh báo\" phát sinh tổng số tiền chậm nộp: {$warningLatePayment}</p></li>";
 
-  $warningLatePaymentFine = implode(" / ", $calculatedResult['warning_late_payment_fine']);
-  $body .= "<li><p>\"Cảnh báo\" có thể phát sinh tiền phạt theo quy định: {$warningLatePaymentFine}</p></li>";
+  $warningLatePaymentFine = $calculatedResult['warning_late_payment_fine'];
+  $warningLatePaymentFineLow = $warningLatePaymentFine[0];
+  $warningLatePaymentFineMedium = $warningLatePaymentFine[1];
+  $warningLatePaymentFineHigh = $warningLatePaymentFine[2];
+
+  $body .= "
+  <li>
+    <p>\"Cảnh báo\" có thể phát sinh tiền phạt theo quy định:</p>
+    <ul>
+      <li>Mức thấp nhất: $warningLatePaymentFineLow</li>
+      <li>Mức trung bình: $warningLatePaymentFineMedium</li>
+      <li>Mức cao nhất: $warningLatePaymentFineHigh</li>
+    </ul>
+  </li>";
 
   $refundableTax = $calculatedResult['refundable_tax'];
   $body .= "<li><p>Tổng số tiền thuế được hoàn lại trong kỳ: {$refundableTax}</p></li>";
