@@ -34,21 +34,5 @@ add_action('tgmpa_register', function () {
     }
 }, 30);
 
-require_once get_theme_file_path('tax-form.php');
-
-add_action('rest_api_init', function () {
-    register_rest_route('api/v1', '/calculate-tax', array(
-        'methods' => 'POST',
-        'callback' => 'calculate_tax',
-    ));
-});
-
-add_action('rest_api_init', function () {
-    register_rest_route('api/v1', '/contact-calculate-tax', array(
-        'methods' => 'POST',
-        'callback' => 'contact_calculate_tax',
-    ));
-});
-
 require('auxin/auxin-include/auxin.php');
 /*-----------------------------------------------------------------------------------*/
