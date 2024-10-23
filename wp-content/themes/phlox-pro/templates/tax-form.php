@@ -11,7 +11,7 @@
 
 <style>
   .tax-form {
-    width: 1024px;
+    max-width: 1024px;
     margin-left: auto;
     margin-right: auto;
   }
@@ -174,11 +174,15 @@
     border-radius: 8px;
     background-color: #FFFFFF;
     color: #5C5C5C;
-    padding: 13px 0px 13px 22px;
+    padding: 11px 14px;
     border: none;
     box-shadow: none;
     outline: none;
-    width: 370px;
+  }
+
+  .result .contact-form textarea {
+    width: 770px;
+    max-width: 100%;
   }
 
   .result .contact-form input:focus {
@@ -188,14 +192,10 @@
     outline: none;
   }
 
-  .result .contact-form button[type=submit] {
+  .result .contact-form input[type=submit] {
     background-color: #0D2556;
-    position: relative;
-    margin: 0;
-    width: 54px;
     border-radius: 8px;
-    height: 46px;
-    padding: 0;
+    color: #FFF;
   }
 
   .result .contact-form .contact-result {
@@ -215,6 +215,14 @@
 
     .tax-form .field .input {
       max-width: none;
+      width: 100%;
+    }
+
+    .result .contact-form {
+      padding: 28px 20px;
+    }
+
+    .result .contact-form textarea {
       width: 100%;
     }
   }
@@ -371,23 +379,23 @@
     <div class="contact-form">
       <p>Các thông tin nêu trên chỉ là dự tính. Nếu bạn cần làm rõ thêm, hoặc cần tư vấn đề giảm thiểu vi phạm, giảm mức phạt theo luật, tối ưu tăng mức thuế được hoàn theo luật, vui lòng đăng ký tư vấn.</p>
       <form action="/?rest_route=/api/v1/contact-calculate-tax" method="POST" class="form" id="contact-form">
-        <field class="field required">
-          <label for="customer-name" class="label">Họ tên</label>
-          <input type="text" id="customer-name" name="customer-name" class="input text" required>
-        </field>
-        <field class="field required">
-          <label for="mobile-number" class="label">Số điện thoại</label>
-          <input size="40" maxlength="400" type="tel" name="mobile-number" required>
-        </field>
-        <field class="field">
-          <label for="customer-issue" class="label">Vấn đề</label>
-          <textarea id="customer-issue" name="customer-issue" rows=5></textarea>
-        </field>
-        <button class="submit" type="submit">
-          <svg width="21" height="22" viewBox="0 0 21 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M15.018 6.2792C14.9102 6.32145 14.841 6.38095 14.7702 6.43268C13.8153 7.13021 12.8629 7.83292 11.9063 8.52872C10.6575 9.43664 9.40629 10.3394 8.15669 11.2464C8.10153 11.2869 8.05461 11.2852 7.99452 11.2645C6.45515 10.7274 4.91413 10.1919 3.37476 9.65391C2.55321 9.3668 1.73331 9.07364 0.911767 8.78653C0.435962 8.62098 0.120679 8.30024 0.0227192 7.77687C-0.0826495 7.21471 0.185711 6.6603 0.677981 6.39992C0.932347 6.26541 1.20894 6.19557 1.47977 6.11021C2.40422 5.81878 3.31467 5.48252 4.23417 5.17557C5.50765 4.7505 6.78113 4.32456 8.05132 3.88915C8.52795 3.72619 9.01116 3.58478 9.4845 3.41148C10.6114 2.99848 11.7598 2.6579 12.8917 2.26042C13.6581 1.99141 14.4335 1.75085 15.1983 1.47925C16.0256 1.1861 16.8669 0.941233 17.6917 0.64032C18.2523 0.435975 18.8244 0.27043 19.3867 0.0703957C20.1465 -0.20034 20.8396 0.347167 20.9796 1.07488C21.0158 1.26198 21.0026 1.44304 20.9499 1.62497C20.6758 2.57599 20.3613 3.51408 20.0806 4.46252C19.7382 5.61961 19.376 6.76981 19.0212 7.92259C18.5849 9.34093 18.1511 10.7601 17.7098 12.1759C17.3534 13.3209 17.0101 14.4694 16.6578 15.6161C16.2174 17.0483 15.7737 18.4787 15.3325 19.91C15.2016 20.335 15.0954 20.7687 14.9414 21.1852C14.7538 21.693 14.301 22.0034 13.7733 22C13.2868 21.9974 12.825 21.6697 12.6554 21.1722C12.4291 20.5101 12.2224 19.8401 12.0109 19.1719C11.4231 17.3216 10.8378 15.4704 10.2476 13.6201C10.2155 13.5184 10.2328 13.4511 10.2888 13.3666C11.1885 12.0259 12.0841 10.6817 12.9814 9.33921C13.6474 8.34249 14.3133 7.34577 14.9793 6.34904C14.9892 6.33439 14.9966 6.31887 15.0196 6.27662L15.018 6.2792Z" fill="white" />
-          </svg>
-        </button>
+        <fieldset class="row fieldset">
+          <field class="field required">
+            <label for="customer-name" class="label">Họ tên</label>
+            <input type="text" id="customer-name" name="customer-name" class="input text" required>
+          </field>
+          <field class="field required">
+            <label for="mobile-number" class="label">Số điện thoại</label>
+            <input size="40" maxlength="400" type="tel" name="mobile-number" required>
+          </field>
+        </fieldset>
+        <fieldset class="row fieldset">
+          <field class="field">
+            <label for="customer-issue" class="label">Vấn đề</label>
+            <textarea id="customer-issue" name="customer-issue" rows=5></textarea>
+          </field>
+        </fieldset>
+        <input class="submit" type="submit" value="Gửi thông tin" />
       </form>
       <div class="contact-result" aria-hidden="true" id="contact-result"></div>
     </div>
