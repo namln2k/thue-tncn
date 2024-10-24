@@ -11,13 +11,15 @@
 
 <style>
   .tax-form {
+    margin-top: 60px;
+    margin-bottom: 60px;
     max-width: 1024px;
     margin-left: auto;
     margin-right: auto;
   }
 
   .tax-form>div+div {
-    margin-top: 100px;
+    margin-top: 60px;
   }
 
   .tax-form .wrapper {
@@ -148,6 +150,7 @@
 
   .result .contact-form {
     color: #FFFFFF;
+    margin-top: 60px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -253,7 +256,7 @@
         <field class="field required">
           <label for="settlement-year" class="label">Năm quyết toán</label>
           <select name="settlement-year" id="settlement-year" class="input select" value=2024 required>
-            <?php foreach (array_reverse(range(2018, 2024)) as $year) {
+            <?php foreach (array_reverse(range(2019, 2024)) as $year) {
               if ($year === 2024) {
                 echo "<option value='$year' selected>$year</option>";
               } else {
@@ -282,7 +285,7 @@
           </field>
           <field class="field required">
             <label for="tax-paid" class="label italic">Số thuế đã khấu trừ</label>
-            <input type="text" id="tax-paid-0" name="tax-paid-0" class="input text currency" required>
+            <input type="text" id="tax-paid-0" name="tax-paid-0" class="input text currency" placeholder="đ" required>
           </field>
         </fieldset>
       </div>
@@ -297,7 +300,7 @@
         </field>
         <field class="field">
           <label for="additional-deduction" class="label">Tổng giảm trừ bảo hiểm, từ thiện, nhân đạo, khuyến học hưu trứ tự nguyện</label>
-          <input type="text" id="additional-deduction" name="additional-deduction" class="input text currency">
+          <input type="text" id="additional-deduction" name="additional-deduction" class="input text currency" placeholder="đ">
         </field>
       </fieldset>
       <div class="footer">
@@ -345,10 +348,31 @@
           </tr>
           <tr class="row">
             <td class="title">
+              <p class="main">Giảm trừ cho bản thân cá nhân</p>
+            </td>
+            <td class="content">
+              <p><b><span id="result-personal-deduction"></span></b></p>
+            </td>
+          </tr>
+          <tr class="row">
+            <td class="title">
+              <p class="main">Giảm cho những người phụ thuộc giảm trừ</p>
+            </td>
+            <td class="content">
+              <p><b><span id="result-dependents-deduction"></span></b></p>
+            </td>
+          </tr>
+          <tr class="row">
+            <td class="title">
+              <p class="main">Tổng giảm trừ bảo hiểm, từ thiện, nhân đạo, khuyến học, đóng hưu trí tự nguyện</p>
+            </td>
+            <td class="content">
+              <p><b><span id="result-additional-deduction"></span></b></p>
+            </td>
+          </tr>
+          <tr class="row">
+            <td class="title">
               <p class="main">Tổng các khoản giảm trừ</p>
-              <p class="subtitle">Giảm trừ cho bản thân cá nhân</p>
-              <p class="subtitle">Giảm cho những người phụ thuộc giảm trừ</p>
-              <p class="subtitle">Tổng giảm trừ bảo hiểm, từ thiện, nhân đạo, khuyến học, đóng quỹ hưu trí tự nguyện</p>
             </td>
             <td class="content">
               <p><b><span id="result-total-deduction"></span></b></p>
@@ -372,7 +396,15 @@
           </tr>
           <tr class="row">
             <td class="title">
-              <p class="main">Tổng số thuế phải nộp thêm trong kỳ</p>
+              <p class="main">Tổng số thuế đã nộp trong kỳ</p>
+            </td>
+            <td class="content">
+              <p><b><span id="result-total-tax-paid"></span></b></p>
+            </td>
+          </tr>
+          <tr class="row">
+            <td class="title">
+              <p class="main">Tổng số tiền thuế phải nộp thêm trong kỳ</p>
             </td>
             <td class="content">
               <p><b><span id="result-tax-need-to-pay"></span></b></p>
@@ -462,9 +494,13 @@
           $('#result-number-of-income-sources').html(result.number_of_income_sources);
           $('#result-number-of-dependents').html(result.number_of_dependents);
           $('#result-total-income').html(result.total_income);
+          $('#result-personal-deduction').html(result.personal_deduction);
+          $('#result-dependents-deduction').html(result.dependents_deduction);
+          $('#result-additional-deduction').html(result.additional_deduction + 'Đ');
           $('#result-total-deduction').html(result.total_deduction);
           $('#result-total-taxable-income').html(result.total_taxable_income);
           $('#result-total-tax').html(result.total_tax);
+          $('#result-total-tax-paid').html(result.total_tax_paid);
 
           $("#result-late-payment-days").html(result.late_payment_days);
           $("#result-tax-need-to-pay").html(result.tax_need_to_pay);
@@ -533,6 +569,8 @@
         }
       });
     })
+
+    initThousandSeparators();
 
     function initThousandSeparators() {
       const currencyInputs = document.querySelectorAll('#tax-form input.currency');

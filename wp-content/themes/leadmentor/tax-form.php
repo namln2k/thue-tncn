@@ -7,7 +7,7 @@ function unformatCurrency($number)
 function sanitizeInput($req)
 {
   $additionalDeduction = $req->get_param('additional-deduction');
-  $req->set_param('additional-deduction', unformatCurrency($additionalDeduction));
+  $req->set_param('additional-deduction', (int)unformatCurrency($additionalDeduction));
 
   $numberOfIncomeSources = $req->get_param('number-of-income-sources');
   for ($i = 0; $i < $numberOfIncomeSources; $i++) {
@@ -54,7 +54,7 @@ function calculate($req)
   $result['dependents_deduction'] = format_currency($dependentsDeduction);
 
   $additionalDeduction = $req->get_param('additional-deduction');
-  $result['additional_deduction'] = format_currency($additionalDeduction);
+  $result['additional_deduction'] = thousand_seperate($additionalDeduction);
 
   $totalDeduction = $personalDeduction + $dependentsDeduction + $additionalDeduction;
   $result['total_deduction'] = format_currency($totalDeduction);
@@ -173,9 +173,14 @@ function calculate_tax($req)
   ]);
 }
 
+function thousand_seperate($number)
+{
+  return number_format((int)$number, 0, '.', ',');
+}
+
 function format_currency($number)
 {
-  return number_format((int)$number, 0, '.', ',') . 'Đ';
+  return thousand_seperate($number) . 'Đ';
 }
 
 function subtract_dates($date1, $date2)
@@ -193,8 +198,7 @@ function contact_calculate_tax($req)
 {
   $mobile = $req->get_param('mobile-number');
 
-  // $to = trim(get_bloginfo('admin_email'));
-  $to = "namln2aug2k@gmail.com";
+  $to = trim(get_bloginfo('admin_email'));
   $subject = "Có khách hàng liên hệ điền phiếu tính thuế";
   $body = "";
   $body .= "
