@@ -132,7 +132,14 @@
     background-color: #F2F7FF;
     color: #001134;
     font-weight: 500;
-    font-size: 16;
+  }
+
+  .result .row .title .main {
+    font-size: 16px;
+  }
+
+  .result .row .title .subtitle {
+    font-size: 14px;
   }
 
   #table-result {
@@ -204,6 +211,12 @@
     margin: 0;
   }
 
+  .tax-form .fieldset .field {
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+  }
+
   @media only screen and (max-width: 1024px) {
     .tax-form .wrapper {
       padding: 20px;
@@ -222,6 +235,10 @@
       padding: 28px 20px;
     }
 
+    .result .contact-form .title {
+      text-transform: uppercase;
+    }
+
     .result .contact-form textarea {
       width: 100%;
     }
@@ -236,14 +253,14 @@
         <field class="field required">
           <label for="settlement-year" class="label">Năm quyết toán</label>
           <select name="settlement-year" id="settlement-year" class="input select" value=2024 required>
-            <option value='2019'>Trước năm 2019</option>
-            <?php foreach (range(2018, 2024) as $year) {
+            <?php foreach (array_reverse(range(2018, 2024)) as $year) {
               if ($year === 2024) {
                 echo "<option value='$year' selected>$year</option>";
               } else {
                 echo "<option value='$year'>$year</option>";
               }
             } ?>
+            <option value='2019'>Trước năm 2019</option>
           </select>
         </field>
         <field class="field required">
@@ -261,19 +278,15 @@
         <fieldset class="fieldset row">
           <field class="field required">
             <label for="income-0" class="label">Tổng thu nhập</label>
-            <input type="text" id="income-0" name="income-0" class="input text" placeholder="đ" required>
+            <input type="text" id="income-0" name="income-0" class="input text currency" placeholder="đ" required>
           </field>
           <field class="field required">
             <label for="tax-paid" class="label italic">Số thuế đã khấu trừ</label>
-            <input type="text" id="tax-paid-0" name="tax-paid-0" class="input text" required>
+            <input type="text" id="tax-paid-0" name="tax-paid-0" class="input text currency" required>
           </field>
         </fieldset>
       </div>
       <fieldset class="fieldset row">
-        <field class="field">
-          <label for="total-income" class="label">Tổng thu nhập chịu thuế</label>
-          <input type="text" id="total-income" name="total-income" class="input text" readonly>
-        </field>
         <field class="field required">
           <label for="number-of-dependents" class="label">Số người phụ thuộc</label>
           <select name="number-of-dependents" id="number-of-dependents" class="input select" required>
@@ -282,52 +295,9 @@
             } ?>
           </select>
         </field>
-      </fieldset>
-      <h3 class="title field-set-title">Các khoản giảm trừ:</h3>
-      <fieldset class="fieldset row">
         <field class="field">
-          <label for="personal-deduction" class="label">Giảm trừ cho bản thân cá nhân</label>
-          <input type="text" id="personal-deduction" name="personal-deduction" class="input text" readonly>
-        </field>
-        <field class="field">
-          <label for="dependants-deduction" class="label">Giảm cho những người phụ thuộc được giảm trừ</label>
-          <input type="text" id="dependants-deduction" name="dependants-deduction" class="input text" readonly>
-        </field>
-      </fieldset>
-      <fieldset class="fieldset row">
-        <field class="field">
-          <label for="charity-deduction" class="label">Tổng từ thiện nhân đạo khuyến học được trừ</label>
-          <input type="text" id="charity-deduction" name="charity-deduction" class="input text">
-        </field>
-        <field class="field">
-          <label for="insurance-deduction" class="label">Tổng các khoản đóng bảo hiểm được trừ</label>
-          <input type="text" id="insurance-deduction" name="insurance-deduction" class="input text">
-        </field>
-      </fieldset>
-      <fieldset class="fieldset row">
-        <field class="field">
-          <label for="pension-deduction" class="label">Tổng các khoản đóng quỹ HTTN được trừ</label>
-          <input type="text" id="pension-deduction" name="pension-deduction" class="input text">
-        </field>
-        <field class="field">
-          <label for="total-deduction" class="label">Tổng các khoản giảm trừ</label>
-          <input type="text" id="total-deduction" name="total-deduction" class="input text" readonly>
-        </field>
-      </fieldset>
-      <fieldset class="fieldset row">
-        <field class="field">
-          <label for="total-taxable-income" class="label">Tổng thu nhập tính thuế</label>
-          <input type="text" id="total-taxable-income" name="total-taxable-income" class="input text" readonly>
-        </field>
-        <field class="field">
-          <label for="total-tax" class="label">Tổng số thuế TNCN phát sinh trong kỳ</label>
-          <input type="text" id="total-tax" name="total-tax" class="input text" readonly>
-        </field>
-      </fieldset>
-      <fieldset class="fieldset row">
-        <field class="field">
-          <label for="total-tax-paid" class="label">Tổng số thuế đã nộp trong kỳ</label>
-          <input type="text" id="total-tax-paid" name="total-tax-paid" class="input text" readonly>
+          <label for="additional-deduction" class="label">Tổng giảm trừ bảo hiểm, từ thiện, nhân đạo, khuyến học hưu trứ tự nguyện</label>
+          <input type="text" id="additional-deduction" name="additional-deduction" class="input text currency">
         </field>
       </fieldset>
       <div class="footer">
@@ -338,45 +308,115 @@
 
   <div class="result" id="table-result">
     <div class="wrapper">
-      <h2 class="section-title result-title">Kết quả</h2>
+      <h2 class="section-title result-title">Kết quả tính thử thuế thu nhập cá nhân</h2>
       <table class="table">
         <tbody>
           <tr class="row">
-            <td class="title">Số ngày chậm quyết toán</td>
+            <td class="title">
+              <p class="main">Năm quyết toán</p>
+            </td>
             <td class="content">
-              <p><b><span id="late-payment-days"></span>&nbsp;ngày</b></p>
+              <p><b><span id="result-settlement-year"></span></b></p>
             </td>
           </tr>
           <tr class="row">
-            <td class="title">Tổng số tiền thuế phải nộp thêm trong kỳ</td>
+            <td class="title">
+              <p class="main">Số nguồn thu nhập</p>
+            </td>
             <td class="content">
-              <p><b><span id="tax-need-to-pay"></span></b></p>
+              <p><b><span id="result-number-of-income-sources"></span></b></p>
             </td>
           </tr>
           <tr class="row">
-            <td class="title">"Cảnh báo" phát sinh tổng số tiền chậm nộp</td>
+            <td class="title">
+              <p class="main">Tổng thu nhập chịu thuế</p>
+            </td>
             <td class="content">
-              <p><b><span id="warning-late-payment"></span></b></p>
+              <p><b><span id="result-total-income"></span></b></p>
             </td>
           </tr>
           <tr class="row">
-            <td class="title">"Cảnh báo" có thể phát sinh tiền phạt theo quy định</td>
+            <td class="title">
+              <p class="main">Số người phụ thuộc</p>
+            </td>
             <td class="content">
-              <p>Mức thấp nhất: <b><span id="warning-late-payment-fine-0"></span></b></p>
-              <p>Mức trung bình: <b><span id="warning-late-payment-fine-1"></span></b></p>
-              <p>Mức cao nhất: <b><span id="warning-late-payment-fine-2"></span></b></p>
+              <p><b><span id="result-number-of-dependents"></span></b></p>
             </td>
           </tr>
           <tr class="row">
-            <td class="title">Tổng số tiền thuế được hoàn lại trong kỳ</td>
+            <td class="title">
+              <p class="main">Tổng các khoản giảm trừ</p>
+              <p class="subtitle">Giảm trừ cho bản thân cá nhân</p>
+              <p class="subtitle">Giảm cho những người phụ thuộc giảm trừ</p>
+              <p class="subtitle">Tổng giảm trừ bảo hiểm, từ thiện, nhân đạo, khuyến học, đóng quỹ hưu trí tự nguyện</p>
+            </td>
             <td class="content">
-              <p><b><span id="refundable-tax"></span><b></p>
+              <p><b><span id="result-total-deduction"></span></b></p>
+            </td>
+          </tr>
+          <tr class="row">
+            <td class="title">
+              <p class="main">Tổng thu nhập tính thuế</p>
+            </td>
+            <td class="content">
+              <p><b><span id="result-total-taxable-income"></span></b></p>
+            </td>
+          </tr>
+          <tr class="row">
+            <td class="title">
+              <p class="main">Tổng số thuế thu nhập cá nhân phát sinh trong kỳ</p>
+            </td>
+            <td class="content">
+              <p><b><span id="result-total-tax"></span></b></p>
+            </td>
+          </tr>
+          <tr class="row">
+            <td class="title">
+              <p class="main">Tổng số thuế phải nộp thêm trong kỳ</p>
+            </td>
+            <td class="content">
+              <p><b><span id="result-tax-need-to-pay"></span></b></p>
+            </td>
+          </tr>
+          <tr class="row">
+            <td class="title">
+              <p class="main">Số ngày chậm quyết toán</p>
+            </td>
+            <td class="content">
+              <p><b><span id="result-late-payment-days"></span>&nbsp;ngày</b></p>
+            </td>
+          </tr>
+          <tr class="row">
+            <td class="title">
+              <p class="main">"Cảnh báo" phát sinh tổng số tiền chậm nộp</p>
+            </td>
+            <td class="content">
+              <p><b><span id="result-warning-late-payment"></span></b></p>
+            </td>
+          </tr>
+          <tr class="row">
+            <td class="title">
+              <p class="main">"Cảnh báo" có thể phát sinh tiền phạt theo quy định</p>
+            </td>
+            <td class="content">
+              <p>Mức thấp nhất: <b><span id="result-warning-late-payment-fine-0"></span></b></p>
+              <p>Mức trung bình: <b><span id="result-warning-late-payment-fine-1"></span></b></p>
+              <p>Mức cao nhất: <b><span id="result-warning-late-payment-fine-2"></span></b></p>
+            </td>
+          </tr>
+          <tr class="row">
+            <td class="title">
+              <p class="main">Tổng số tiền thuế được hoàn lại trong kỳ</p>
+            </td>
+            <td class="content">
+              <p><b><span id="result-refundable-tax"></span><b></p>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
     <div class="contact-form">
+      <h1 class="title">Khuyến cáo</h1>
       <p>Các thông tin nêu trên chỉ là dự tính. Nếu bạn cần làm rõ thêm, hoặc cần tư vấn đề giảm thiểu vi phạm, giảm mức phạt theo luật, tối ưu tăng mức thuế được hoàn theo luật, vui lòng đăng ký tư vấn.</p>
       <form action="/?rest_route=/api/v1/contact-calculate-tax" method="POST" class="form" id="contact-form">
         <fieldset class="row fieldset">
@@ -416,21 +456,23 @@
         success: function(response) {
           const result = JSON.parse(response).data;
 
-          $('#total-income').val(result.total_income);
-          $('#personal-deduction').val(result.personal_deduction);
-          $('#dependants-deduction').val(result.dependants_deduction);
-          $('#total-deduction').val(result.total_deduction);
-          $('#total-taxable-income').val(result.total_taxable_income);
-          $('#total-tax').val(result.total_tax);
-          $('#total-tax-paid').val(result.total_tax_paid);
+          $('#additional-deduction').val(result.additional_deduction);
 
-          $("#late-payment-days").html(result.late_payment_days);
-          $("#tax-need-to-pay").html(result.tax_need_to_pay);
-          $("#warning-late-payment").html(result.warning_late_payment);
+          $('#result-settlement-year').html(result.settlement_year);
+          $('#result-number-of-income-sources').html(result.number_of_income_sources);
+          $('#result-number-of-dependents').html(result.number_of_dependents);
+          $('#result-total-income').html(result.total_income);
+          $('#result-total-deduction').html(result.total_deduction);
+          $('#result-total-taxable-income').html(result.total_taxable_income);
+          $('#result-total-tax').html(result.total_tax);
+
+          $("#result-late-payment-days").html(result.late_payment_days);
+          $("#result-tax-need-to-pay").html(result.tax_need_to_pay);
+          $("#result-warning-late-payment").html(result.warning_late_payment);
           result.warning_late_payment_fine.forEach((fine, index) => {
-            $(`#warning-late-payment-fine-${index}`).html(fine);
+            $(`#result-warning-late-payment-fine-${index}`).html(fine);
           })
-          $("#refundable-tax").html(result.refundable_tax);
+          $("#result-refundable-tax").html(result.refundable_tax);
 
           const tableResult = $("#table-result");
           tableResult.css("display", "block");
@@ -453,16 +495,18 @@
           `<fieldset class="fieldset row">
             <field class="field required">
               <label for="income-${i}" class="label">Tổng thu nhập nguồn ${i + 1}</label>
-              <input type="text" id="income-${i}" name="income-${i}" class="input text" placeholder="đ" required>
+              <input type="text" id="income-${i}" name="income-${i}" class="input text currency" placeholder="đ" required>
             </field>
             <field class="field required">
               <label for="tax-paid-${i}" class="label italic">Số thuế đã khấu trừ nguồn ${i + 1}</label>
-              <input type="text" id="tax-paid-${i}" name="tax-paid-${i}" class="input text" required>
+              <input type="text" id="tax-paid-${i}" name="tax-paid-${i}" class="input text currency" placeholder="đ" required>
             </field>
           </fieldset>`;
       }
 
       incomeAndTaxStatistics.html(content);
+
+      initThousandSeparators();
     });
 
     const contactForm = $("#contact-form");
@@ -489,6 +533,28 @@
         }
       });
     })
+
+    function initThousandSeparators() {
+      const currencyInputs = document.querySelectorAll('#tax-form input.currency');
+      for (var i = 0, element; element = currencyInputs[i]; i++) {
+        initThousandSeparator(element);
+      }
+    }
+
+    function initThousandSeparator(element) {
+      element.addEventListener('keyup', function() {
+        var val = this.value;
+        val = val.replace(/[^0-9\.]/g, '');
+
+        if (val != "") {
+          valArr = val.split('.');
+          valArr[0] = (parseInt(valArr[0], 10)).toLocaleString();
+          val = valArr.join('.');
+        }
+
+        this.value = val;
+      });
+    }
 
     function scrollToElement(element) {
       $([document.documentElement, document.body]).animate({

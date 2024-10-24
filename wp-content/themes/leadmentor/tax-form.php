@@ -1,7 +1,39 @@
 <?php
+function unformatCurrency($number)
+{
+  return preg_replace('/[^a-z0-9 ]/i', '', $number);
+}
+
+function sanitizeInput($req)
+{
+  $additionalDeduction = $req->get_param('additional-deduction');
+  $req->set_param('additional-deduction', unformatCurrency($additionalDeduction));
+
+  $numberOfIncomeSources = $req->get_param('number-of-income-sources');
+  for ($i = 0; $i < $numberOfIncomeSources; $i++) {
+    $incomeField = "income-{$i}";
+    $incomeValue = (int)unformatCurrency($req->get_param($incomeField));
+    $req->set_param($incomeField, $incomeValue);
+
+    $taxPaidField = "tax-paid-{$i}";
+    $taxPaidValue = (int)unformatCurrency($req->get_param($taxPaidField));
+    $req->set_param($taxPaidField, $taxPaidValue);
+  }
+
+  return $req;
+}
+
 function calculate($req)
 {
+  $req = sanitizeInput($req);
+
+  $result = [];
+
+  $settlementYear = $req->get_param('settlement-year');
+  $result['settlement_year'] = $settlementYear;
+
   $numberOfIncomeSources = $req->get_param('number-of-income-sources');
+  $result['number_of_income_sources'] = $numberOfIncomeSources;
 
   $totalIncome = 0;
   $totalTaxPaid = 0;
@@ -10,20 +42,38 @@ function calculate($req)
     $totalTaxPaid += (int)$req->get_param("tax-paid-{$i}");
   }
 
+  $result['total_income'] = format_currency($totalIncome);
+  $result['total_tax_paid'] = format_currency($totalTaxPaid);
+
   $personalDeduction = 132000000;
+  $result['personal_deduction'] = format_currency($personalDeduction);
 
   $numberOfDependents = (int)$req->get_param('number-of-dependents');
+  $result['number_of_dependents'] = $numberOfDependents;
   $dependentsDeduction = 52800000 * $numberOfDependents;
+  $result['dependents_deduction'] = format_currency($dependentsDeduction);
 
-  $charityDeduction = $req->get_param('charity-deduction');
+  $additionalDeduction = $req->get_param('additional-deduction');
+  $result['additional_deduction'] = format_currency($additionalDeduction);
 
-  $insuranceDeduction = $req->get_param('insurance-deduction');
-
-  $pensionDeduction = $req->get_param('pension-deduction');
-
-  $totalDeduction = $personalDeduction + $dependentsDeduction + $charityDeduction + $insuranceDeduction + $pensionDeduction;
+  $totalDeduction = $personalDeduction + $dependentsDeduction + $additionalDeduction;
+  $result['total_deduction'] = format_currency($totalDeduction);
 
   $totalTaxableIncome = $totalIncome - $totalDeduction;
+
+  if ($totalTaxableIncome <= 0) {
+    $result['total_taxable_income'] = format_currency(0);
+    $result['total_tax'] = format_currency(0);
+    $result['tax_need_to_pay'] = format_currency(0);
+    $result['late_payment_days'] = 0;
+    $result['warning_late_payment'] = format_currency(0);
+    $result['warning_late_payment_fine'] = ['0Đ', '0Đ', '0Đ'];
+    $result['refundable_tax'] = format_currency($totalTaxPaid);
+
+    return $result;
+  }
+
+  $result['total_taxable_income'] = format_currency($totalTaxableIncome);
 
   $totalTax = 0;
   $level1FullTax = 60000000 * 5 / 100;
@@ -54,69 +104,65 @@ function calculate($req)
     $totalTax += ($totalTaxableIncome - 960000000) * 35 / 100;
   }
 
-  if ($totalTax - $totalTaxPaid > 0) {
-    $currentDatetime = current_datetime()->format('Y-m-d');
-    $settlementYear = $req->get_param('settlement-year');
+  $result['total_tax'] = format_currency($totalTax);
 
+  $taxNeedToPay = $totalTax - $totalTaxPaid;
+
+  if ($taxNeedToPay > 0) {
+    $currentDatetime = current_datetime()->format('Y-m-d');
     switch ($settlementYear) {
       case '2020':
-        $settlementYear = '2021-05-04';
+        $settlementDay = '2021-05-04';
         break;
       case '2021':
-        $settlementYear = '2022-05-04';
+        $settlementDay = '2022-05-04';
         break;
       case '2022':
-        $settlementYear = '2022-04-30';
+        $settlementDay = '2022-04-30';
         break;
       case '2023':
-        $settlementYear = '2023-05-02';
+        $settlementDay = '2023-05-02';
         break;
       default:
-        $settlementYear = "{$settlementYear}-04-30";
+        $settlementDay = "{$settlementYear}-04-30";
     }
 
-    $latePaymentDays = subtract_dates($currentDatetime, $settlementYear);
-    $taxNeedToPay = $totalTax - $totalTaxPaid;
+    $latePaymentDays = subtract_dates($currentDatetime, $settlementDay);
 
     $warningLatePayment = $latePaymentDays * $taxNeedToPay * 0.03 / 100;
 
     if ($latePaymentDays <= 5) {
-      $warningLatePaymentFine = [0, 0, 0];
+      $warningLatePaymentFine = ['0Đ', '0Đ', '0Đ'];
     } elseif ($latePaymentDays <= 30) {
-      $warningLatePaymentFine = ['1.000.000', '1.750.000', '2.500.000'];
+      $warningLatePaymentFine = ['1.000.000Đ', '1.750.000Đ', '2.500.000Đ'];
     } elseif ($latePaymentDays <= 60) {
-      $warningLatePaymentFine = ['2.500.000', '3.250.000', '4.000.000'];
+      $warningLatePaymentFine = ['2.500.000Đ', '3.250.000Đ', '4.000.000Đ'];
     } elseif ($latePaymentDays <= 90) {
-      $warningLatePaymentFine = ['4.000.000', '5.750.000', '7.500.000'];
+      $warningLatePaymentFine = ['4.000.000Đ', '5.750.000Đ', '7.500.000Đ'];
     } else {
       $warningLatePaymentFine = [
-        thousand_seperate($taxNeedToPay),
-        thousand_seperate($taxNeedToPay * 1.5),
-        thousand_seperate($taxNeedToPay * 3)
+        format_currency($taxNeedToPay),
+        format_currency($taxNeedToPay * 1.5),
+        format_currency($taxNeedToPay * 3)
       ];
     }
 
     $refundableTax = 0;
   } else {
-    $latePaymentDays = 0;
     $taxNeedToPay = 0;
+    $latePaymentDays = 0;
+    $warningLatePayment = 0;
+    $warningLatePaymentFine = ['0Đ', '0Đ', '0Đ'];
     $refundableTax = $totalTaxPaid - $totalTax;
   }
 
-  return [
-    'late_payment_days' => $latePaymentDays,
-    'tax_need_to_pay' => thousand_seperate($taxNeedToPay),
-    'warning_late_payment' => thousand_seperate($warningLatePayment),
-    'warning_late_payment_fine' => $warningLatePaymentFine,
-    'refundable_tax' => thousand_seperate($refundableTax),
-    'total_income' => thousand_seperate($totalIncome),
-    'personal_deduction' => thousand_seperate($personalDeduction),
-    'dependents_deduction' => thousand_seperate($dependentsDeduction),
-    'total_deduction' => thousand_seperate($totalDeduction),
-    'total_taxable_income' => thousand_seperate($totalTaxableIncome),
-    'total_tax' => thousand_seperate($totalTax),
-    'total_tax_paid' => thousand_seperate($totalTaxPaid)
-  ];
+  $result['tax_need_to_pay'] = format_currency($taxNeedToPay);
+  $result['late_payment_days'] = $latePaymentDays;
+  $result['warning_late_payment'] = format_currency($warningLatePayment);
+  $result['warning_late_payment_fine'] = $warningLatePaymentFine;
+  $result['refundable_tax'] = format_currency($refundableTax);
+
+  return $result;
 }
 
 function calculate_tax($req)
@@ -127,7 +173,7 @@ function calculate_tax($req)
   ]);
 }
 
-function thousand_seperate($number)
+function format_currency($number)
 {
   return number_format((int)$number, 0, '.', ',') . 'Đ';
 }
@@ -147,7 +193,8 @@ function contact_calculate_tax($req)
 {
   $mobile = $req->get_param('mobile-number');
 
-  $to = trim(get_bloginfo('admin_email'));
+  // $to = trim(get_bloginfo('admin_email'));
+  $to = "namln2aug2k@gmail.com";
   $subject = "Có khách hàng liên hệ điền phiếu tính thuế";
   $body = "";
   $body .= "
@@ -173,9 +220,9 @@ function contact_calculate_tax($req)
   for ($i = 0; $i < $numberOfIncomeSources; $i++) {
     $index = $i + 1;
     $income = $req->get_param("income-{$i}");
-    $income = thousand_seperate($income);
+    $income = format_currency($income);
     $taxPaid = $req->get_param("tax-paid-{$i}");
-    $taxPaid = thousand_seperate($taxPaid);
+    $taxPaid = format_currency($taxPaid);
 
     $body .= "
             <li><p>Nguồn {$index}:</p>
@@ -195,7 +242,7 @@ function contact_calculate_tax($req)
   $totalIncome = $calculatedResult['total_income'];
   $body .= "<li><p>Tổng thu nhập chịu thuế: {$totalIncome}</p></li>";
 
-  $numberOfDependents = $req->get_param('number-of-dependents');
+  $numberOfDependents = $calculatedResult['number_of_dependents'];
   $body .= "<li><p>Số người phụ thuộc: {$numberOfDependents}</p></li>";
 
   $personalDeduction = $calculatedResult['personal_deduction'];
@@ -204,17 +251,8 @@ function contact_calculate_tax($req)
   $dependentsDeduction = $calculatedResult['dependents_deduction'];
   $body .= "<li><p>Giảm cho những người phụ thuộc được giảm trừ: {$dependentsDeduction}</p></li>";
 
-  $charityDeduction = $req->get_param('charity-deduction');
-  $charityDeduction = thousand_seperate($charityDeduction);
-  $body .= "<li><p>Tổng từ thiện nhân đạo khuyến học được trừ: {$charityDeduction}</p></li>";
-
-  $insuranceDeduction = $req->get_param('insurance-deduction');
-  $insuranceDeduction = thousand_seperate($insuranceDeduction);
-  $body .= "<li><p>Tổng các khoản đóng bảo hiểm được trừ: {$insuranceDeduction}</p></li>";
-
-  $pensionDeduction = $req->get_param('pension-deduction');
-  $pensionDeduction = thousand_seperate($pensionDeduction);
-  $body .= "<li><p>Tổng các khoản đóng quỹ HTTN được trừ: {$pensionDeduction}</p></li>";
+  $additionalDeduction = $calculatedResult['additional_deduction'];
+  $body .= "<li><p>Tổng giảm trừ bảo hiểm, từ thiện, nhân đạo, khuyến học hưu trứ tự nguyện: {$additionalDeduction}</p></li>";
 
   $totalDeduction = $calculatedResult['total_deduction'];
   $body .= "<li><p>Tổng các khoản giảm trừ: {$totalDeduction}</p></li>";
